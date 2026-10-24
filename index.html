@@ -7,780 +7,115 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --rojo:#b8412f; --rojo-osc:#8f2f21; --verde:#4f8a3c; --verde-osc:#366a27; --verde-cl:#e3f0d9;
-    --amarillo:#f4c542; --amarillo-osc:#d6a91d; --amarillo-cl:#fff4cc; --crema:#fbf5e6; --papel:#fffdf6;
-    --marron:#5b3a29; --marron-cl:#a98467; --azul:#2e7fb0; --azul-cl:#e1eff7; --texto:#3a2a20; --gris:#7b6f66;
-    --sombra:0 6px 0 rgba(91,58,41,.18), 0 10px 24px rgba(91,58,41,.12);
-  }
-  * { box-sizing:border-box; }
-  body {
-    margin:0; color:var(--texto); line-height:1.45; min-height:100vh;
-    font-family:"Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
-    background: radial-gradient(circle at 10% 0%, #fff7da 0, transparent 40%),
-                radial-gradient(circle at 100% 20%, #e3f0d9 0, transparent 40%), var(--crema);
-  }
-  h1,h2,h3 { margin:0; line-height:1.15; }
-  button { font:inherit; cursor:pointer; border:0; }
-  button:focus-visible, [tabindex]:focus-visible { outline:4px solid var(--azul); outline-offset:2px; }
-  [hidden] { display:none !important; }
-
-  /* ---------- botones ---------- */
-  .btn {
-    display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 22px; border-radius:14px;
-    font-weight:600; font-size:1.05rem; color:#fff; background:var(--verde); box-shadow:0 5px 0 var(--verde-osc);
-    transition:transform .08s, box-shadow .08s, filter .15s;
-  }
-  .btn:hover:not(:disabled) { filter:brightness(1.07); }
-  .btn:active:not(:disabled) { transform:translateY(4px); box-shadow:0 1px 0 var(--verde-osc); }
-  .btn:disabled { background:#cfc6bb; box-shadow:0 5px 0 #b3a99d; color:#8c8279; cursor:not-allowed; }
-  .btn.rojo { background:var(--rojo); box-shadow:0 5px 0 var(--rojo-osc); }
-  .btn.rojo:active:not(:disabled) { box-shadow:0 1px 0 var(--rojo-osc); }
-  .btn.azul { background:var(--azul); box-shadow:0 5px 0 #1f5f86; }
-  .btn.azul:active:not(:disabled) { box-shadow:0 1px 0 #1f5f86; }
-  .btn.claro { background:#fff; color:var(--marron); box-shadow:0 5px 0 #d9cdb9; border:2px solid #eadfca; }
-  .btn.claro:active:not(:disabled) { box-shadow:0 1px 0 #d9cdb9; }
-  .btn.grande { font-size:1.35rem; padding:16px 34px; border-radius:18px; }
-  .btn.mini { padding:6px 12px; font-size:.9rem; border-radius:10px; box-shadow:0 3px 0 #d9cdb9; }
-  .btn.ancho { width:100%; }
-
-  /* ---------- portada ---------- */
-  .portada {
-    min-height:100vh; display:grid; place-items:center; text-align:center; color:#fff; padding:24px;
-    background: linear-gradient(180deg, rgba(40,25,15,.35) 0%, rgba(40,25,15,.65) 100%),
-                url("img/granja.jpg") center/cover no-repeat;
-  }
-  .portada .caja { max-width:680px; }
-  .sello {
-    display:inline-block; background:var(--amarillo); color:var(--marron); font-weight:700; padding:6px 16px;
-    border-radius:99px; transform:rotate(-3deg); margin-bottom:16px; font-size:.95rem; box-shadow:0 4px 0 rgba(0,0,0,.25);
-  }
-  .portada h1 { font-size:clamp(2.4rem, 8vw, 4.4rem); text-shadow:0 4px 0 rgba(0,0,0,.35); }
-  .portada p { font-size:1.2rem; margin:14px 0 28px; text-shadow:0 2px 6px rgba(0,0,0,.6); }
-  .fila-emojis { font-size:2.6rem; margin-top:26px; letter-spacing:10px; }
-  .fila-emojis span { display:inline-block; animation:salto 2.2s ease-in-out infinite; }
-  .fila-emojis span:nth-child(2) { animation-delay:.3s; }
-  .fila-emojis span:nth-child(3) { animation-delay:.6s; }
-  .fila-emojis span:nth-child(4) { animation-delay:.9s; }
-  @keyframes salto { 0%,100% { transform:translateY(0);} 50% { transform:translateY(-12px);} }
-
-  /* ---------- estructura ---------- */
-  .contenedor { max-width:1200px; margin:0 auto; padding:16px 14px 50px; }
-  .topbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
-  .logo { font-size:1.3rem; font-weight:700; color:var(--rojo); }
-  .panel { background:var(--papel); border-radius:20px; padding:16px 18px; margin-bottom:16px; border:3px solid #eadfca; box-shadow:var(--sombra); }
-  .panel h2 { font-size:1.25rem; color:var(--marron); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
-  .ayuda { color:var(--gris); font-size:.95rem; margin:0 0 10px; }
-  .paso { display:inline-grid; place-items:center; width:32px; height:32px; border-radius:50%; background:var(--rojo); color:#fff; font-size:1rem; flex:none; }
-
-  /* ---------- preparación ---------- */
-  .banner-caso { overflow:hidden; padding:0; }
-  .banner-caso .foto { height:170px; background:linear-gradient(180deg, rgba(40,25,15,.1), rgba(40,25,15,.55)), url("img/granja.jpg") center/cover; display:flex; align-items:flex-end; padding:14px 20px; }
-  .banner-caso .foto h2 { color:#fff; font-size:1.7rem; text-shadow:0 2px 6px rgba(0,0,0,.6); margin:0; }
-  .banner-caso .cuerpo { padding:16px 20px 18px; }
-  .animales { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:14px; margin-top:12px; }
-  .animal { background:#fff; border:3px solid #eadfca; border-radius:16px; overflow:hidden; }
-  .animal img { width:100%; height:150px; object-fit:cover; display:block; }
-  .animal div { padding:10px 14px 14px; }
-  .animal b { font-size:1.15rem; color:var(--marron); }
-  .animal p { margin:4px 0 0; font-size:.95rem; }
-  .como { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:10px; }
-  .como div { background:var(--amarillo-cl); border:2px dashed var(--amarillo); border-radius:14px; padding:10px 12px; font-size:.95rem; }
-  .como b { display:block; font-size:1.8rem; }
-
-  .jug-setup { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-  .avatar {
-    width:56px; height:56px; border-radius:50%; font-size:1.8rem; display:grid; place-items:center; flex:none; background:#fff;
-    border:4px solid #fff; box-shadow:0 0 0 3px var(--c, var(--verde)), 0 4px 0 rgba(0,0,0,.15);
-  }
-  button.avatar:hover { transform:rotate(-8deg) scale(1.05); }
-  .jug-setup input { flex:1; min-width:0; font:inherit; font-size:1.1rem; padding:11px 14px; border-radius:12px; border:3px solid #eadfca; background:#fff; color:var(--texto); }
-  .jug-setup input:focus { outline:none; border-color:var(--verde); }
-
-  /* ---------- partida: disposición ---------- */
-  .juego {
-    display:grid; gap:16px; grid-template-columns:minmax(0,1fr);
-    grid-template-areas:"turno" "tablero" "resto";
-  }
-  @media (min-width:1000px) {
-    .juego { grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr); grid-template-areas:"tablero turno" "tablero resto"; align-items:start; }
-  }
-  .a-turno { grid-area:turno; } .a-tablero { grid-area:tablero; } .a-resto { grid-area:resto; }
-  .juego .panel { margin-bottom:0; }
-  .a-resto { display:grid; gap:16px; }
-
-  /* ---------- panel de turno ---------- */
-  .jugadores { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-  .jugador { display:flex; align-items:center; gap:6px; padding:4px 12px 4px 4px; border-radius:99px; background:#f4ecda; font-size:.9rem; transition:all .2s; }
-  .jugador .avatar { width:32px; height:32px; font-size:1.05rem; border-width:2px; box-shadow:0 0 0 2px var(--c); }
-  .jugador.activo { background:var(--amarillo); box-shadow:0 3px 0 var(--amarillo-osc); font-weight:700; }
-  .jugador.fuera { opacity:.45; filter:grayscale(1); text-decoration:line-through; }
-  .turno-de { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-  .turno-de .avatar { width:62px; height:62px; font-size:2rem; animation:salto 1.6s ease-in-out infinite; }
-  .turno-de small { color:var(--gris); display:block; }
-  .turno-de b { font-size:1.3rem; color:var(--marron); }
-  .dados { display:flex; gap:14px; justify-content:center; margin:8px 0 12px; min-height:68px; }
-  .dado { width:62px; height:62px; background:#fff; border-radius:14px; border:3px solid var(--marron); box-shadow:0 5px 0 rgba(91,58,41,.25); display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:7px; }
-  .dado i { border-radius:50%; margin:auto; width:11px; height:11px; }
-  .dado i.on { background:var(--marron); }
-  .dado.rueda { animation:rueda .25s linear infinite; }
-  @keyframes rueda { from { transform:rotate(0); } to { transform:rotate(25deg) translateY(-4px); } }
-  .pasos { text-align:center; font-weight:600; color:var(--marron); margin-bottom:8px; }
-  .acciones { display:grid; gap:10px; }
-  .msg { background:var(--azul-cl); border:2px solid #bcd8e6; border-radius:12px; padding:9px 12px; font-size:.95rem; margin-bottom:10px; }
-
-  /* ---------- tablero ---------- */
-  .tablero-marco { background:var(--marron); padding:8px; border-radius:20px; box-shadow:var(--sombra); }
-  .tablero {
-    position:relative; display:grid; grid-template-columns:repeat(var(--cols), 1fr); grid-template-rows:repeat(var(--rows), 1fr);
-    aspect-ratio:var(--cols) / var(--rows); container-type:inline-size; border-radius:12px; overflow:hidden; background:#b9d99b;
-  }
-  .celda { position:relative; background:#f3e9cf; border:1px solid rgba(91,58,41,.13); display:flex; align-items:center; justify-content:center; flex-wrap:wrap; }
-  .celda.puerta { background:#fbe7a6; }
-  .celda.puerta::before { content:attr(data-ico); font-size:max(8px, 2cqw); opacity:.75; position:absolute; pointer-events:none; }
-  .celda.puerta:has(.ficha)::before { opacity:.25; }
-  .celda.alcance { background:var(--amarillo); cursor:pointer; animation:parpadeo 1s ease-in-out infinite; z-index:2; }
-  .celda.alcance:hover { background:#ffd966; transform:scale(1.15); }
-  @keyframes parpadeo { 50% { background:#ffe58a; } }
-  .sala {
-    position:relative; margin:1px; border:3px solid var(--marron); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; text-align:center; padding:2px; container-type:inline-size;
-  }
-  .sala .etiqueta { display:flex; flex-direction:column; align-items:center; background:rgba(255,253,246,.82); border-radius:10px; padding:2px 6px 3px; max-width:94%; box-shadow:0 2px 0 rgba(91,58,41,.2); }
-  .sala .icono { font-size:clamp(16px, 17cqw, 34px); line-height:1.05; }
-  .sala .nombre { font-size:clamp(8px, 10cqw, 14px); font-weight:700; color:var(--marron); line-height:1.1; text-align:center; }
-  .sala .pasadizo-m { position:absolute; top:2px; right:3px; font-size:clamp(8px, 9cqw, 13px); opacity:.85; }
-  .sala .fichas { display:flex; flex-wrap:wrap; justify-content:center; gap:2px; margin-top:2px; }
-  .sala.alcanzable { outline:4px solid var(--amarillo); outline-offset:-4px; cursor:pointer; animation:brilla 1s ease-in-out infinite; z-index:2; }
-  .sala.alcanzable:hover { transform:scale(1.03); }
-  @keyframes brilla { 50% { box-shadow:inset 0 0 0 100px rgba(244,197,66,.45); } }
-  .sala.agotada::after { content:"✔"; position:absolute; top:2px; left:4px; color:var(--verde-osc); font-weight:700; font-size:clamp(9px, 9cqw, 14px); }
-  .ficha {
-    width:clamp(14px, 4.1cqw, 34px); height:clamp(14px, 4.1cqw, 34px); border-radius:50%; background:#fff; display:inline-grid; place-items:center;
-    font-size:clamp(9px, 2.8cqw, 22px); box-shadow:0 0 0 2px var(--c), 0 2px 0 rgba(0,0,0,.25); position:relative; z-index:1;
-  }
-  .ficha.activa { animation:salto 1s ease-in-out infinite; z-index:3; box-shadow:0 0 0 3px var(--c), 0 0 0 6px rgba(255,255,255,.9); }
-  /* los tamaños de ficha dentro del tablero se miden con el ancho del tablero */
-  .tablero .celda .ficha { width:clamp(14px, 4.2vw, 34px); height:clamp(14px, 4.2vw, 34px); font-size:clamp(9px, 2.6vw, 21px); }
-  @media (min-width:1000px) { .tablero .celda .ficha { width:min(30px, 2.6vw); height:min(30px, 2.6vw); font-size:min(19px, 1.7vw); } }
-
-  /* ---------- archivo de pistas y cuaderno ---------- */
-  .archivo { list-style:none; margin:0; padding:2px; display:grid; gap:10px; max-height:420px; overflow:auto; }
-  .tarj-mini { border-radius:6px 6px 16px 6px; padding:9px 13px; border:2px solid; box-shadow:3px 4px 0 rgba(0,0,0,.1); animation:aparece .45s cubic-bezier(.2,1.4,.4,1); }
-  .tarj-mini.pista { background:var(--amarillo-cl); border-color:#f0dc8c; }
-  .tarj-mini.ayuda { background:var(--azul-cl); border-color:#bcd8e6; }
-  .tarj-mini.descarte { background:var(--verde-cl); border-color:#b9d9a6; }
-  .tarj-mini b { display:block; color:var(--marron); }
-  .tarj-mini small { color:var(--gris); display:block; }
-  .tarj-mini em { display:block; margin-top:4px; color:var(--marron); font-style:normal; font-size:.9rem; border-top:1px dashed rgba(0,0,0,.2); padding-top:4px; }
-  @keyframes aparece { from { opacity:0; transform:translateY(-14px) rotate(-3deg) scale(.9);} to { opacity:1; transform:none; } }
-  .grupo { margin-bottom:10px; }
-  .grupo .titulo { display:block; font-weight:700; color:var(--marron-cl); font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
-  .opcion { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; margin:3px 4px 3px 0; border-radius:99px; background:#fff; border:2px solid #eadfca; color:var(--texto); font-size:.9rem; }
-  .opcion.tachada { text-decoration:line-through; color:#a89d92; background:#f1ece3; border-style:dashed; }
-
-  /* ---------- ventanas ---------- */
-  .velo { position:fixed; inset:0; z-index:50; background:rgba(40,25,15,.62); display:flex; align-items:center; justify-content:center; padding:14px; animation:fundido .2s; }
-  @keyframes fundido { from { opacity:0; } to { opacity:1; } }
-  .ventana { background:var(--papel); border-radius:24px; max-width:680px; width:100%; max-height:92vh; overflow:auto; border:4px solid #fff; box-shadow:0 18px 50px rgba(0,0,0,.4); animation:pop .35s cubic-bezier(.2,1.5,.4,1); }
-  .ventana.ancha { max-width:900px; }
-  @keyframes pop { from { transform:scale(.7) translateY(30px); opacity:0; } to { transform:none; opacity:1; } }
-  .ventana .cab { background:var(--marron); color:#fff; padding:14px 20px; font-size:1.25rem; font-weight:600; display:flex; align-items:center; gap:10px; }
-  .ventana .cab.rojo { background:var(--rojo); } .ventana .cab.verde { background:var(--verde); }
-  .ventana .cab.azul { background:var(--azul); } .ventana .cab.amarillo { background:var(--amarillo); color:var(--marron); }
-  .ventana .cuerpo { padding:16px 20px 22px; }
-  .ventana img.foto { width:100%; max-height:230px; object-fit:cover; border-radius:14px; margin-bottom:12px; border:3px solid #eadfca; }
-  .ventana .pie { margin-top:16px; text-align:center; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-  .tarjeta-gira { animation:gira .6s ease-out; }
-  @keyframes gira { from { transform:rotateY(90deg) scale(.8); opacity:0; } to { transform:none; opacity:1; } }
-  .insignia { display:inline-block; padding:3px 12px; border-radius:99px; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
-  .insignia.pista { background:var(--amarillo); color:var(--marron); }
-  .insignia.ayuda { background:var(--azul); color:#fff; }
-  .insignia.descarte { background:var(--verde); color:#fff; }
-  .texto-tarjeta { font-size:1.2rem; margin:0 0 10px; }
-  .lectura { background:var(--amarillo-cl); border:2px dashed var(--amarillo); border-radius:12px; padding:10px 14px; }
-  .sacudir { animation:sacudir .5s; }
-  @keyframes sacudir { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-12px);} 40%{transform:translateX(12px);} 60%{transform:translateX(-8px);} 80%{transform:translateX(8px);} }
-
-  .dos-col { display:grid; grid-template-columns:1fr; gap:14px; }
-  @media (min-width:760px) { .dos-col { grid-template-columns:1fr 1fr; } }
-  .col-animal { background:#fff; border:3px solid #eadfca; border-radius:16px; padding:12px; }
-  .col-animal h3 { font-size:1.15rem; color:var(--marron); margin-bottom:8px; }
-  .grupo-ac { margin-bottom:10px; }
-  .grupo-ac h4 { margin:0 0 5px; font-size:.9rem; color:var(--marron-cl); text-transform:uppercase; letter-spacing:.04em; }
-  .elegibles { display:flex; flex-wrap:wrap; gap:6px; }
-  .elegible { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:99px; background:#fff; border:2px solid #eadfca; color:var(--texto); font-size:.88rem; line-height:1.1; text-align:left; transition:all .12s; }
-  .elegible:hover { border-color:var(--rojo); }
-  .elegible.on { background:var(--rojo); border-color:var(--rojo-osc); color:#fff; }
-  .elegible.tachada { opacity:.45; text-decoration:line-through; }
-
-  .trofeo { font-size:4.5rem; text-align:center; animation:salto 1.2s ease-in-out infinite; }
-  .solucion { background:var(--verde-cl); border-radius:14px; padding:10px 14px; margin-bottom:10px; }
-  .solucion b { color:var(--verde-osc); }
-  .solucion .fila { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0; }
-  .solucion .pieza { background:#fff; border-radius:99px; padding:4px 12px; font-size:.92rem; border:2px solid #b9d9a6; }
-  .explica { background:#fff; border-radius:12px; padding:10px 12px; border:2px solid #eadfca; margin-top:6px; font-size:.95rem; }
-  .confeti { position:fixed; top:-20px; width:12px; height:18px; z-index:80; pointer-events:none; animation:cae linear forwards; }
-  @keyframes cae { to { transform:translateY(110vh) rotate(720deg); } }
-
-  .toast { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:70; background:var(--marron); color:#fff; padding:8px 20px 8px 10px; border-radius:99px; display:flex; align-items:center; gap:10px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,.35); animation:baja .4s cubic-bezier(.2,1.5,.4,1); }
-  .toast .avatar { width:38px; height:38px; font-size:1.2rem; border-width:2px; }
-  @keyframes baja { from { transform:translate(-50%,-80px); } to { transform:translate(-50%,0); } }
-  footer { text-align:center; color:var(--gris); font-size:.85rem; padding:10px 14px 30px; }
-  footer a { color:var(--rojo); }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.001s !important; animation-iteration-count:1 !important; transition:none !important; } }
-</style>
+<link rel="stylesheet" href="estilos.css">
 </head>
 <body>
+
+<div id="avisoRed" class="aviso-red" hidden></div>
 
 <!-- ================= PORTADA ================= -->
 <section id="pPortada" class="portada">
   <div class="caja">
-    <span class="sello">🩺 Juego de casos clínicos</span>
+    <span class="sello">🩺 Juego de casos clínicos · multijugador</span>
     <h1>Diagnóstico en la granja</h1>
-    <p>Algo raro pasa en la granja. Recorred el tablero, reunid pistas y sed los primeros en descubrir qué les pasa a los animales.</p>
-    <button class="btn grande" onclick="irA('setup')">🐾 ¡A jugar!</button>
+    <p>Dos animales enfermos, un tablero para cada uno y un único objetivo: ser el primero en descubrir qué les pasa. Cada jugador desde su dispositivo y con sus propias notas.</p>
+    <div class="botones">
+      <button class="btn grande" onclick="UI.ir('entrada','crear')">🚜 Crear partida</button>
+      <button class="btn grande azul" onclick="UI.ir('entrada','unir')">🔑 Unirme con un código</button>
+    </div>
     <div class="fila-emojis" aria-hidden="true"><span>🐑</span><span>🐴</span><span>🐄</span><span>🐓</span></div>
   </div>
 </section>
 
-<!-- ================= PREPARACIÓN ================= -->
-<main id="pSetup" class="contenedor" hidden>
+<!-- ================= ENTRADA (nombre y avatar) ================= -->
+<main id="pEntrada" class="contenedor" hidden>
   <div class="topbar">
     <div class="logo">🌾 Diagnóstico en la granja</div>
-    <button class="btn claro mini" onclick="irA('portada')">⬅ Portada</button>
+    <button class="btn claro mini" onclick="UI.ir('portada')">⬅ Portada</button>
   </div>
+  <div class="panel form-entrada">
+    <h2 id="entTitulo">Crear partida</h2>
+    <label class="campo"><span>Tu nombre</span>
+      <input type="text" id="entNombre" maxlength="20" placeholder="Dra. Ana" autocomplete="nickname"></label>
+    <div class="campo"><span>Tu personaje (toca para cambiarlo)</span>
+      <div class="fila-avatar"><button class="avatar" id="entAvatar" onclick="UI.cambiarAvatar()" aria-label="Cambiar personaje"></button></div></div>
+    <label class="campo" id="entCodigoCampo"><span>Código de la partida</span>
+      <input type="text" id="entCodigo" class="codigo" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters"></label>
+    <p id="entError" class="msg" style="display:none;background:#fbe0da;border-color:#efb5a9"></p>
+    <button class="btn grande ancho" id="entBoton" onclick="UI.entrar()">Continuar</button>
+    <p class="ayuda" id="entAyuda" style="margin-top:12px"></p>
+  </div>
+</main>
 
-  <div class="panel banner-caso">
-    <div class="foto"><h2 id="sTitulo"></h2></div>
-    <div class="cuerpo">
-      <p id="sIntro" style="margin:0;font-size:1.05rem"></p>
-      <div id="sAnimales" class="animales"></div>
+<!-- ================= SALA DE ESPERA ================= -->
+<main id="pLobby" class="contenedor" hidden>
+  <div class="topbar">
+    <div class="logo">🌾 Diagnóstico en la granja</div>
+    <button class="btn claro mini" onclick="UI.salir()">🚪 Salir</button>
+  </div>
+  <div class="panel form-entrada">
+    <h2>Sala de espera</h2>
+    <div class="codigo-sala">
+      <p class="ayuda" style="margin:0 0 6px">Pasa este código a los demás jugadores</p>
+      <span class="cod" id="lobCodigo"></span>
+      <div style="margin-top:12px"><button class="btn claro mini" onclick="UI.copiarEnlace()" id="btnCopiar">🔗 Copiar enlace para invitar</button></div>
     </div>
+    <ul class="lista-lobby" id="lobJugadores"></ul>
+    <div id="lobAcciones"></div>
   </div>
-
-  <div class="panel">
-    <h2>🎲 Cómo se juega</h2>
-    <div class="como">
-      <div><b>🎲</b>Tira los dados y mueve a tu veterinario por la granja.</div>
-      <div><b>🚪</b>Entra en una sala para descubrir una tarjeta con una pista o una ayuda.</div>
-      <div><b>📓</b>Apunta y tacha sospechas en tu cuaderno.</div>
-      <div><b>🔬</b>Cuando lo tengas claro, ve a la Clínica y acusa. Gana el primero que acierte.</div>
-    </div>
+  <div class="panel form-entrada">
+    <h2>🎲 Resumen de las reglas</h2>
+    <ul style="margin:0;padding-left:20px">
+      <li>Cada animal tiene su tablero, sus tarjetas y su cuaderno de notas.</li>
+      <li>En tu turno tiras los dados y mueves tu ficha en <b>uno</b> de los dos tableros.</li>
+      <li>Al entrar en una sala descubres una tarjeta que <b>solo ves tú</b>.</li>
+      <li>Tus notas son privadas: nadie más las ve.</li>
+      <li>Para acusar hay que estar en la Clínica del tablero de ese animal. Si fallas, pierdes 2 turnos.</li>
+      <li>Gana quien resuelva primero los dos casos.</li>
+    </ul>
   </div>
-
-  <div class="panel">
-    <h2><span class="paso">1</span> ¿Quién juega?</h2>
-    <p class="ayuda">De 2 a 6 veterinarios en la misma partida. Toca el avatar para cambiar de personaje.</p>
-    <div id="jugSetup"></div>
-    <button id="btnAnadir" class="btn claro mini" onclick="anadirJugador()">➕ Añadir veterinario</button>
-  </div>
-
-  <div style="text-align:center"><button class="btn grande" onclick="iniciarPartida()">🚜 Empezar la partida</button></div>
 </main>
 
 <!-- ================= PARTIDA ================= -->
 <main id="pJuego" class="contenedor" hidden>
   <div class="topbar">
-    <div class="logo">🌾 Diagnóstico en la granja</div>
+    <div class="logo">🌾 Diagnóstico en la granja <span class="chip-sala" id="juCodigo"></span></div>
     <div>
-      <button class="btn claro mini" onclick="verCaso()">📋 El caso</button>
-      <button class="btn claro mini" id="btnSonido" onclick="alternarSonido()" aria-label="Activar o quitar el sonido">🔊</button>
-      <button class="btn claro mini" onclick="salirPartida()">🚪 Salir</button>
+      <button class="btn claro mini" onclick="UI.verCaso()">📋 El caso</button>
+      <button class="btn claro mini" id="btnSonido" onclick="UI.alternarSonido()" aria-label="Activar o quitar el sonido">🔊</button>
+      <button class="btn claro mini" onclick="UI.salir()">🚪 Salir</button>
     </div>
   </div>
 
-  <div class="juego">
-    <div class="panel a-turno" id="panelTurno"></div>
+  <div id="juJugadores" class="barra-jug"></div>
 
-    <div class="a-tablero">
-      <div class="tablero-marco"><div id="tablero" class="tablero" role="application" aria-label="Tablero de la granja"></div></div>
-    </div>
-
-    <div class="a-resto">
-      <div class="panel">
-        <h2>🗒️ Archivo de tarjetas</h2>
-        <ul id="archivo" class="archivo"></ul>
-      </div>
-      <div class="panel">
-        <h2>📓 Cuaderno de sospechas</h2>
-        <p class="ayuda">Toca para tachar lo que ya has descartado.</p>
-        <div id="cuaderno"></div>
-      </div>
+  <div class="arriba">
+    <div class="panel" id="panelTurno"></div>
+    <div class="panel">
+      <h2>📣 Lo que está pasando</h2>
+      <ul id="registro" class="registro"></ul>
     </div>
   </div>
+
+  <div class="tableros" id="tableros"></div>
+
+  <h2 style="margin:22px 0 10px;color:var(--marron)">🔒 Solo tú ves esto <span class="tag-privado">privado</span></h2>
+  <div class="tableros" id="privados"></div>
 </main>
 
 <div id="capas"></div>
 
 <footer>
-  Material de estudio de Bioquímica. Imágenes de dominio público (CC0) de Wikimedia Commons.
+  Material de estudio de Bioquímica · Imágenes CC0 de Wikimedia Commons ·
   <a href="https://github.com/Nortiaweb/metabcases/blob/main/CREDITOS.md" target="_blank" rel="noopener">Créditos</a> ·
   <a href="https://github.com/Nortiaweb/metabcases/blob/main/SPECS.md" target="_blank" rel="noopener">Especificaciones</a>
 </footer>
 
+<script src="vendor/peerjs.min.js"></script>
 <script src="casos.js"></script>
-<script>
-/* ======================= utilidades ======================= */
-const $ = id => document.getElementById(id);
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-}
-const rnd6 = () => 1 + Math.floor(Math.random() * 6);
-const C = CASOS[0];                       // caso en juego (por ahora solo hay uno)
-const SALAS = {};                         // id -> sala
-C.salas.forEach(s => SALAS[s.id] = s);
-
-/* mapa de celdas: qué sala ocupa cada casilla y qué casillas son puerta */
-const SALA_EN = {};                       // "r,c" -> id de sala
-const PUERTA = {};                        // "r,c" -> id de sala a la que da acceso
-C.salas.forEach(s => {
-  const [r0, c0, h, w] = s.rect;
-  for (let r = r0; r < r0 + h; r++) for (let c = c0; c < c0 + w; c++) SALA_EN[r + ',' + c] = s.id;
-  s.puertas.forEach(([r, c]) => PUERTA[r + ',' + c] = s.id);
-});
-
-/* ======================= sonido ======================= */
-let sonidoOn = true, audioCtx = null;
-function tono(freq, dur, inicio, tipo) {
-  if (!sonidoOn) return;
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = tipo || 'sine'; o.frequency.value = freq;
-    const t = audioCtx.currentTime + (inicio || 0);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(t); o.stop(t + dur + 0.05);
-  } catch (e) { /* sin audio no pasa nada */ }
-}
-const sonidos = {
-  clic:  () => tono(660, 0.07, 0, 'triangle'),
-  dado:  () => tono(300 + Math.random() * 300, 0.05, 0, 'square'),
-  paso:  () => tono(440, 0.1, 0, 'triangle'),
-  carta: () => { tono(523, 0.12, 0); tono(784, 0.18, 0.1); },
-  mal:   () => { tono(220, 0.25, 0, 'sawtooth'); tono(165, 0.35, 0.2, 'sawtooth'); },
-  gana:  () => { [523, 659, 784, 1047].forEach((f, i) => tono(f, 0.22, i * 0.13, 'triangle')); }
-};
-function alternarSonido() { sonidoOn = !sonidoOn; $('btnSonido').textContent = sonidoOn ? '🔊' : '🔇'; sonidos.clic(); }
-
-/* ======================= pantallas ======================= */
-function irA(p) {
-  $('pPortada').hidden = p !== 'portada';
-  $('pSetup').hidden   = p !== 'setup';
-  $('pJuego').hidden   = p !== 'juego';
-  window.scrollTo(0, 0);
-  sonidos.clic();
-}
-
-/* ======================= preparación ======================= */
-const AVATARES = ['👩‍⚕️', '👨‍⚕️', '🧑‍⚕️', '👩🏽‍⚕️', '👨🏾‍⚕️', '🧑🏻‍⚕️', '🧑‍🌾', '🦸'];
-const COLORES  = ['#4f8a3c', '#b8412f', '#2e7fb0', '#c98a12', '#8a4fa8', '#1d8f8a'];
-const NOMBRES  = ['Dra. Ana', 'Dr. Luis', 'Dra. Marta', 'Dr. Pablo', 'Dra. Lucía', 'Dr. Sergio'];
-let setup = { jugadores: [0, 1].map(i => ({ nombre: NOMBRES[i], avatar: i })) };
-
-function renderSetup() {
-  $('sTitulo').textContent = C.titulo;
-  $('sIntro').textContent = C.intro;
-  $('sAnimales').innerHTML = C.animales.map(a => `
-    <div class="animal"><img src="${esc(a.imagen)}" alt="Foto: ${esc(a.nombre)}" loading="lazy">
-      <div><b>${esc(a.emoji)} ${esc(a.nombre)}</b><p>${esc(a.resumen)}</p></div></div>`).join('');
-  $('jugSetup').innerHTML = setup.jugadores.map((j, i) => `
-    <div class="jug-setup">
-      <button class="avatar" style="--c:${COLORES[i % COLORES.length]}" onclick="cambiarAvatar(${i})" aria-label="Cambiar avatar del veterinario ${i + 1}">${AVATARES[j.avatar % AVATARES.length]}</button>
-      <input type="text" value="${esc(j.nombre)}" maxlength="20" aria-label="Nombre del veterinario ${i + 1}" oninput="setup.jugadores[${i}].nombre = this.value">
-      <button class="btn claro mini" onclick="quitarJugador(${i})" ${setup.jugadores.length <= 2 ? 'disabled' : ''} aria-label="Quitar veterinario ${i + 1}">✖</button>
-    </div>`).join('');
-  $('btnAnadir').disabled = setup.jugadores.length >= 6;
-}
-function cambiarAvatar(i) { setup.jugadores[i].avatar = (setup.jugadores[i].avatar + 1) % AVATARES.length; renderSetup(); sonidos.clic(); }
-function anadirJugador() {
-  if (setup.jugadores.length >= 6) return;
-  const n = setup.jugadores.length;
-  setup.jugadores.push({ nombre: NOMBRES[n], avatar: n % AVATARES.length }); renderSetup(); sonidos.clic();
-}
-function quitarJugador(i) { if (setup.jugadores.length > 2) { setup.jugadores.splice(i, 1); renderSetup(); sonidos.clic(); } }
-
-/* ======================= estado de la partida ======================= */
-/* fase: 'inicio' (elegir acción) | 'rodando' | 'mover' | 'final' (en la Clínica, puede acusar o terminar) */
-let S = null;
-const actual = () => S.jugadores[S.turno];
-
-function iniciarPartida() {
-  S = {
-    jugadores: setup.jugadores.map((j, i) => ({
-      nombre: j.nombre.trim() || ('Veterinario ' + (i + 1)),
-      avatar: AVATARES[j.avatar % AVATARES.length],
-      color: COLORES[i % COLORES.length],
-      pos: { tipo: 'celda', r: C.mapa.inicio[i][0], c: C.mapa.inicio[i][1] },
-      eliminado: false
-    })),
-    turno: 0, fase: 'inicio', dados: null, pasos: 0, alcance: null,
-    mazo: {}, archivo: [], tachados: {}, acus: null, terminada: false
-  };
-  C.salas.forEach(s => S.mazo[s.id] = 0);
-  irA('juego');
-  renderJuego();
-  verCaso(true);
-}
-
-function salirPartida() {
-  if (confirm('¿Salir de la partida? Se perderá el progreso.')) { S = null; cerrarCapas(); irA('setup'); renderSetup(); }
-}
-
-function avisoTurno() {
-  if (!S || S.terminada) return;
-  const j = actual();
-  document.querySelectorAll('.toast').forEach(t => t.remove());
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = `<span class="avatar" style="--c:${j.color}">${esc(j.avatar)}</span> Turno de ${esc(j.nombre)}`;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2200);
-}
-
-function siguienteTurno() {
-  if (S.jugadores.every(j => j.eliminado)) { finalizar(null); return; }
-  do { S.turno = (S.turno + 1) % S.jugadores.length; } while (S.jugadores[S.turno].eliminado);
-  S.fase = 'inicio'; S.dados = null; S.alcance = null; S.pasos = 0;
-  renderJuego();
-  avisoTurno();
-}
-
-/* ======================= movimiento ======================= */
-const salaActual = j => j.pos.tipo === 'sala' ? SALAS[j.pos.id] : null;
-const caminable = (r, c) => r >= 0 && c >= 0 && r < C.mapa.filas && c < C.mapa.columnas && !SALA_EN[r + ',' + c];
-
-/* Calcula a qué casillas y salas puede llegar el jugador con "pasos" pasos. */
-function calcularAlcance(j, pasos) {
-  const dist = new Map(), cola = [];
-  if (j.pos.tipo === 'celda') {
-    dist.set(j.pos.r + ',' + j.pos.c, 0); cola.push([j.pos.r, j.pos.c]);
-  } else if (pasos >= 1) {
-    SALAS[j.pos.id].puertas.forEach(([r, c]) => { dist.set(r + ',' + c, 1); cola.push([r, c]); });  // salir cuesta 1 paso
-  }
-  for (let i = 0; i < cola.length; i++) {
-    const [r, c] = cola[i], d = dist.get(r + ',' + c);
-    if (d >= pasos) continue;
-    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dr, dc]) => {
-      const nr = r + dr, nc = c + dc, k = nr + ',' + nc;
-      if (caminable(nr, nc) && !dist.has(k)) { dist.set(k, d + 1); cola.push([nr, nc]); }
-    });
-  }
-  const salas = new Set();
-  dist.forEach((d, k) => {
-    const sala = PUERTA[k];
-    if (sala && d + 1 <= pasos && !(j.pos.tipo === 'sala' && j.pos.id === sala)) salas.add(sala);   // entrar cuesta 1 paso
-  });
-  // en una celda inicial la propia casilla no es destino
-  if (j.pos.tipo === 'celda') dist.delete(j.pos.r + ',' + j.pos.c);
-  return { celdas: dist, salas };
-}
-
-/* ======================= acciones del turno ======================= */
-function tirarDados() {
-  if (!S || S.fase !== 'inicio') return;
-  S.fase = 'rodando'; renderPanelTurno();
-  let n = 0;
-  const iv = setInterval(() => {
-    S.dados = [rnd6(), rnd6()]; renderPanelTurno(true); sonidos.dado();
-    if (++n >= 9) {
-      clearInterval(iv);
-      S.dados = [rnd6(), rnd6()]; S.pasos = S.dados[0] + S.dados[1];
-      S.alcance = calcularAlcance(actual(), S.pasos);
-      S.fase = 'mover';
-      sonidos.clic();
-      renderJuego();
-    }
-  }, 90);
-}
-
-function moverACelda(r, c) {
-  if (!S || S.fase !== 'mover' || !S.alcance.celdas.has(r + ',' + c)) return;
-  actual().pos = { tipo: 'celda', r, c };
-  sonidos.paso();
-  tras_accion();
-}
-
-function moverASala(id) {
-  if (!S || S.fase !== 'mover' || !S.alcance.salas.has(id)) return;
-  actual().pos = { tipo: 'sala', id };
-  sonidos.paso();
-  descubrirTarjeta(id);
-}
-
-function quedarse() { if (S && S.fase === 'mover') tras_accion(); }
-
-function investigar() {
-  const s = salaActual(actual());
-  if (!S || S.fase !== 'inicio' || !s) return;
-  descubrirTarjeta(s.id);
-}
-
-function usarPasadizo() {
-  const s = salaActual(actual());
-  if (!S || S.fase !== 'inicio' || !s || !s.pasadizo) return;
-  actual().pos = { tipo: 'sala', id: s.pasadizo };
-  sonidos.paso();
-  descubrirTarjeta(s.pasadizo);
-}
-
-/* Después de moverse o investigar: si está en la Clínica puede acusar; si no, pasa el turno. */
-function tras_accion() {
-  const s = salaActual(actual());
-  S.alcance = null;
-  if (s && s.acusar) { S.fase = 'final'; renderJuego(); }
-  else siguienteTurno();
-}
-
-/* ======================= tarjetas ======================= */
-const TIPOS = { pista: '🔎 Pista', ayuda: '🧰 Ayuda', descarte: '✅ Descarte' };
-
-function descubrirTarjeta(salaId) {
-  const sala = SALAS[salaId], i = S.mazo[salaId];
-  S.alcance = null; S.fase = 'carta';
-  if (i >= sala.tarjetas.length) {
-    renderJuego();
-    abrirVentana(`${esc(sala.icono)} ${esc(sala.nombre)}`, '',
-      `<p class="texto-tarjeta" style="text-align:center">Aquí ya no queda nada nuevo por descubrir.</p>
-       <div class="pie"><button class="btn" onclick="cerrarTarjeta()">Entendido</button></div>`);
-    return;
-  }
-  const t = sala.tarjetas[i];
-  S.mazo[salaId]++;
-  S.archivo.unshift({ sala: salaId, tarjeta: t, quien: actual().nombre });
-  sonidos.carta();
-  renderJuego();
-  abrirVentana(`${esc(sala.icono)} ${esc(sala.nombre)}`, t.tipo === 'ayuda' ? 'azul' : (t.tipo === 'descarte' ? 'verde' : 'amarillo'),
-    `<div class="tarjeta-gira">
-       <span class="insignia ${esc(t.tipo)}">${TIPOS[t.tipo] || 'Tarjeta'}</span>
-       <h3 style="font-size:1.4rem;color:var(--marron);margin-bottom:8px">${esc(t.titulo)}</h3>
-       ${t.imagen ? `<img class="foto" src="${esc(t.imagen)}" alt="">` : ''}
-       <p class="texto-tarjeta">${esc(t.texto)}</p>
-       ${t.lectura ? `<div class="lectura"><b>💡 Lectura:</b> ${esc(t.lectura)}</div>` : ''}
-     </div>
-     <div class="pie"><button class="btn" onclick="cerrarTarjeta()">📝 Apuntado</button></div>`);
-}
-function cerrarTarjeta() { cerrarCapas(); tras_accion(); }
-
-/* ======================= pintar ======================= */
-function renderJuego() { if (S) { renderPanelTurno(); renderTablero(); renderArchivo(); renderCuaderno(); } }
-
-const CARAS = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
-function dadoHtml(v, rueda) {
-  return `<div class="dado ${rueda ? 'rueda' : ''}" aria-label="Dado: ${v}">${[0,1,2,3,4,5,6,7,8].map(i => `<i class="${CARAS[v].includes(i) ? 'on' : ''}"></i>`).join('')}</div>`;
-}
-
-function renderPanelTurno(rodando) {
-  const j = actual(), sala = salaActual(j);
-  const jugs = S.jugadores.map((p, i) => `
-    <span class="jugador ${p.eliminado ? 'fuera' : ''} ${i === S.turno && !p.eliminado ? 'activo' : ''}">
-      <span class="avatar" style="--c:${p.color}">${esc(p.avatar)}</span>${esc(p.nombre)}</span>`).join('');
-  let dados = '', msg = '', acc = '';
-
-  if (S.dados) dados = `<div class="dados">${dadoHtml(S.dados[0], S.fase === 'rodando')}${dadoHtml(S.dados[1], S.fase === 'rodando')}</div>`;
-
-  if (S.fase === 'inicio') {
-    msg = sala
-      ? `Estás en <b>${esc(sala.icono)} ${esc(sala.nombre)}</b>. Puedes tirar los dados para moverte o investigar aquí.`
-      : 'Tira los dados para moverte por la granja.';
-    acc += `<button class="btn ancho" onclick="tirarDados()">🎲 Tirar los dados</button>`;
-    if (sala) {
-      const quedan = S.mazo[sala.id] < sala.tarjetas.length;
-      acc += `<button class="btn azul ancho" onclick="investigar()">🔎 Investigar aquí ${quedan ? '' : '(ya no queda nada)'}</button>`;
-      if (sala.pasadizo) acc += `<button class="btn claro ancho" onclick="usarPasadizo()">🕳️ Pasadizo a ${esc(SALAS[sala.pasadizo].icono)} ${esc(SALAS[sala.pasadizo].nombre)}</button>`;
-    }
-    if (sala && sala.acusar) acc += `<button class="btn rojo ancho" onclick="abrirAcusacion()">⚖️ ¡Acusar!</button>`;
-  } else if (S.fase === 'rodando') {
-    msg = 'Rodando los dados…';
-  } else if (S.fase === 'carta') {
-    msg = 'Lee la tarjeta y apúntala en el cuaderno.';
-  } else if (S.fase === 'mover') {
-    msg = `Has sacado <b>${S.pasos}</b>. Toca una casilla iluminada o una sala resaltada para moverte.`;
-    acc += `<button class="btn claro ancho" onclick="quedarse()">⏭ Quedarme donde estoy</button>`;
-  } else if (S.fase === 'final') {
-    msg = 'Estás en la Clínica veterinaria. Puedes acusar ahora o terminar el turno.';
-    acc += `<button class="btn rojo ancho" onclick="abrirAcusacion()">⚖️ ¡Acusar!</button>
-            <button class="btn claro ancho" onclick="siguienteTurno()">⏭ Terminar turno</button>`;
-  }
-
-  $('panelTurno').innerHTML = `
-    <div class="jugadores">${jugs}</div>
-    <div class="turno-de"><span class="avatar" style="--c:${j.color}">${esc(j.avatar)}</span>
-      <div><small>Turno de</small><b>${esc(j.nombre)}</b></div></div>
-    ${dados}
-    <div class="msg">${msg}</div>
-    <div class="acciones">${acc}</div>`;
-}
-
-function fichasEn(filtro) {
-  return S.jugadores.map((p, i) => ({ p, i })).filter(({ p }) => !p.eliminado && filtro(p.pos))
-    .map(({ p, i }) => `<span class="ficha ${i === S.turno ? 'activa' : ''}" style="--c:${p.color}" title="${esc(p.nombre)}">${esc(p.avatar)}</span>`).join('');
-}
-
-function renderTablero() {
-  const m = C.mapa, el = $('tablero');
-  el.style.setProperty('--cols', m.columnas); el.style.setProperty('--rows', m.filas);
-  let h = '';
-  for (let r = 0; r < m.filas; r++) {
-    for (let c = 0; c < m.columnas; c++) {
-      const k = r + ',' + c;
-      if (SALA_EN[k]) continue;
-      const puerta = PUERTA[k], alc = S.alcance && S.alcance.celdas.has(k);
-      h += `<div class="celda ${puerta ? 'puerta' : ''} ${alc ? 'alcance' : ''}" style="grid-row:${r + 1};grid-column:${c + 1}"
-              ${puerta ? `data-ico="${esc(SALAS[puerta].icono)}"` : ''}
-              ${alc ? `data-accion="celda" data-r="${r}" data-c="${c}" role="button" tabindex="0" aria-label="Moverse a esta casilla"` : ''}>
-              ${fichasEn(pos => pos.tipo === 'celda' && pos.r === r && pos.c === c)}</div>`;
-    }
-  }
-  C.salas.forEach(s => {
-    const [r, c, hh, ww] = s.rect, alc = S.alcance && S.alcance.salas.has(s.id);
-    const fondo = s.imagen
-      ? `background:linear-gradient(rgba(255,255,255,.62),rgba(255,255,255,.62)),url('${esc(s.imagen)}') center/cover, ${esc(s.color)};`
-      : `background:${esc(s.color)};`;
-    h += `<div class="sala ${alc ? 'alcanzable' : ''} ${S.mazo[s.id] >= s.tarjetas.length ? 'agotada' : ''}"
-            style="grid-row:${r + 1} / span ${hh};grid-column:${c + 1} / span ${ww};${fondo}"
-            ${alc ? `data-accion="sala" data-id="${esc(s.id)}" role="button" tabindex="0" aria-label="Entrar en ${esc(s.nombre)}"` : ''}>
-            ${s.pasadizo ? `<span class="pasadizo-m" title="Pasadizo secreto">🌀</span>` : ''}
-            <span class="etiqueta"><span class="icono">${esc(s.icono)}</span><span class="nombre">${esc(s.nombre)}</span></span>
-            <span class="fichas">${fichasEn(pos => pos.tipo === 'sala' && pos.id === s.id)}</span></div>`;
-  });
-  el.innerHTML = h;
-}
-
-function accionTablero(e) {
-  const t = e.target.closest('[data-accion]');
-  if (!t) return;
-  if (t.dataset.accion === 'celda') moverACelda(+t.dataset.r, +t.dataset.c);
-  else if (t.dataset.accion === 'sala') moverASala(t.dataset.id);
-}
-document.addEventListener('DOMContentLoaded', () => {
-  $('tablero').addEventListener('click', accionTablero);
-  $('tablero').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); accionTablero(e); } });
-});
-
-function renderArchivo() {
-  $('archivo').innerHTML = S.archivo.length ? S.archivo.map(a => {
-    const sala = SALAS[a.sala];
-    return `<li class="tarj-mini ${esc(a.tarjeta.tipo)}"><b>${esc(a.tarjeta.titulo)}</b>
-      <small>${esc(sala.icono)} ${esc(sala.nombre)} · ${esc(a.quien)}</small>${esc(a.tarjeta.texto)}
-      ${a.tarjeta.lectura ? `<em>💡 ${esc(a.tarjeta.lectura)}</em>` : ''}</li>`;
-  }).join('') : '<li class="ayuda">Todavía no habéis descubierto ninguna tarjeta. ¡Entrad en una sala!</li>';
-}
-
-function renderCuaderno() {
-  const op = C.opciones;
-  const grupo = (titulo, lista, cat) => `<div class="grupo"><span class="titulo">${titulo}</span>${lista.map(x =>
-    `<button class="opcion ${S.tachados[cat + ':' + x.id] ? 'tachada' : ''}" onclick="tachar('${cat}','${esc(x.id)}')">${esc(x.icono)} ${esc(x.texto)}</button>`).join('')}</div>`;
-  const origenes = op.origenes.map(id => ({ id, icono: SALAS[id].icono, texto: SALAS[id].nombre }));
-  $('cuaderno').innerHTML = grupo('Posibles causas', op.causas, 'causa') + grupo('Posibles enzimas', op.enzimas, 'enzima') + grupo('Posibles orígenes', origenes, 'origen');
-}
-function tachar(cat, id) { const k = cat + ':' + id; S.tachados[k] = !S.tachados[k]; sonidos.clic(); renderCuaderno(); }
-
-/* ======================= ventanas ======================= */
-function cerrarCapas() { $('capas').innerHTML = ''; }
-function abrirVentana(cab, claseCab, cuerpo, ancha) {
-  const v = document.createElement('div');
-  v.className = 'velo';
-  v.innerHTML = `<div class="ventana ${ancha ? 'ancha' : ''}" role="dialog" aria-modal="true"><div class="cab ${claseCab}">${cab}</div><div class="cuerpo">${cuerpo}</div></div>`;
-  $('capas').innerHTML = ''; $('capas').appendChild(v);
-  const foco = v.querySelector('button.btn'); if (foco) foco.focus();
-  return v;
-}
-
-function verCaso(alEmpezar) {
-  abrirVentana('📋 ' + esc(C.titulo), 'azul',
-    `<p style="margin-top:0;font-size:1.05rem">${esc(C.intro)}</p>
-     ${C.animales.map(a => `<div class="animal" style="margin-bottom:10px"><img src="${esc(a.imagen)}" alt="" style="height:120px"><div><b>${esc(a.emoji)} ${esc(a.nombre)}</b><p>${esc(a.resumen)}</p></div></div>`).join('')}
-     <div class="pie"><button class="btn" onclick="cerrarCapas();${alEmpezar ? 'avisoTurno()' : ''}">${alEmpezar ? '🚜 ¡A investigar!' : 'Cerrar'}</button></div>`);
-}
-
-/* ======================= acusación ======================= */
-function abrirAcusacion() {
-  const j = actual(), s = salaActual(j);
-  if (!S || S.terminada || !s || !s.acusar) return;
-  S.acus = {}; C.animales.forEach(a => S.acus[a.id] = {});
-  sonidos.clic();
-  const op = C.opciones;
-  const origenes = op.origenes.map(id => ({ id, icono: SALAS[id].icono, texto: SALAS[id].nombre }));
-  const grupo = (animal, titulo, lista, cat) => `
-    <div class="grupo-ac"><h4>${titulo}</h4><div class="elegibles">${lista.map(x =>
-      `<button class="elegible ${S.tachados[cat + ':' + x.id] ? 'tachada' : ''}" data-an="${animal}" data-cat="${cat}" data-id="${esc(x.id)}" onclick="elegirAcus('${animal}','${cat}','${esc(x.id)}')">${esc(x.icono)} ${esc(x.texto)}</button>`).join('')}</div></div>`;
-  abrirVentana(`⚖️ ${esc(j.nombre)} propone el diagnóstico`, 'rojo',
-    `<p class="ayuda" style="margin-top:0">Para <b>cada animal</b> elige qué lo ha producido, qué enzima está bloqueada y dónde se expuso. Si aciertas las seis, ganas. Si fallas alguna, quedas fuera de la partida.</p>
-     <div class="dos-col">${C.animales.map(a => `
-       <div class="col-animal"><h3>${esc(a.emoji)} ${esc(a.nombre)}</h3>
-         ${grupo(a.id, '¿Qué lo ha producido?', op.causas, 'causa')}
-         ${grupo(a.id, '¿Qué enzima está bloqueada?', op.enzimas, 'enzima')}
-         ${grupo(a.id, '¿Dónde se expuso?', origenes, 'origen')}</div>`).join('')}</div>
-     <div class="pie">
-       <button class="btn rojo" id="btnConfirmar" disabled onclick="confirmarAcusacion()">⚖️ ¡Acusar!</button>
-       <button class="btn claro" onclick="cerrarCapas()">Todavía no</button>
-     </div>`, true);
-}
-
-function elegirAcus(animal, cat, id) {
-  S.acus[animal][cat] = id;
-  document.querySelectorAll(`.elegible[data-an="${animal}"][data-cat="${cat}"]`).forEach(b => b.classList.toggle('on', b.dataset.id === id));
-  $('btnConfirmar').disabled = !C.animales.every(a => S.acus[a.id].causa && S.acus[a.id].enzima && S.acus[a.id].origen);
-  sonidos.clic();
-}
-
-function confirmarAcusacion() {
-  const j = actual();
-  const ok = C.animales.every(a => ['causa', 'enzima', 'origen'].every(k => S.acus[a.id][k] === C.solucion[a.id][k]));
-  if (ok) { finalizar(j); return; }
-  j.eliminado = true;
-  sonidos.mal();
-  const v = abrirVentana('❌ Diagnóstico incorrecto', 'rojo',
-    `<div class="trofeo" style="animation:none">😵</div>
-     <p style="text-align:center;font-size:1.15rem"><b>${esc(j.nombre)}</b> se ha equivocado y queda fuera de la partida.</p>
-     <div class="pie"><button class="btn" onclick="cerrarCapas();siguienteTurno()">Seguir jugando</button></div>`);
-  v.querySelector('.ventana').classList.add('sacudir');
-  renderJuego();
-}
-
-/* ======================= final ======================= */
-function finalizar(ganador) {
-  S.terminada = true;
-  const op = C.opciones;
-  const nombre = (lista, id) => { const x = lista.find(o => o.id === id); return x ? `${x.icono} ${x.texto}` : id; };
-  const bloques = C.animales.map(a => {
-    const s = C.solucion[a.id];
-    return `<div class="solucion"><b>${esc(a.emoji)} ${esc(a.nombre)}</b>
-      <div class="fila">
-        <span class="pieza">${esc(nombre(op.causas, s.causa))}</span>
-        <span class="pieza">${esc(nombre(op.enzimas, s.enzima))}</span>
-        <span class="pieza">${esc(SALAS[s.origen].icono)} ${esc(SALAS[s.origen].nombre)}</span>
-      </div><div class="explica">${esc(C.explicacion[a.id])}</div></div>`;
-  }).join('');
-  abrirVentana(ganador ? '🎉 ¡Caso resuelto!' : '📕 Caso cerrado', ganador ? 'verde' : '',
-    (ganador
-      ? `<div class="trofeo">🏆</div><p style="text-align:center;font-size:1.3rem;margin:4px 0 12px"><b>${esc(ganador.avatar)} ${esc(ganador.nombre)}</b> ha resuelto el caso.</p>`
-      : `<div class="trofeo" style="animation:none">🤷</div><p style="text-align:center;font-size:1.2rem">Nadie ha acertado. Esta era la solución:</p>`) +
-    bloques + `<div class="pie"><button class="btn" onclick="jugarOtraVez()">🔁 Jugar otra partida</button></div>`, true);
-  if (ganador) { sonidos.gana(); lluviaConfeti(); } else sonidos.mal();
-  renderJuego();
-}
-function jugarOtraVez() { S = null; cerrarCapas(); irA('setup'); renderSetup(); }
-
-function lluviaConfeti() {
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const cols = ['#b8412f', '#4f8a3c', '#f4c542', '#2e7fb0', '#8a4fa8'];
-  for (let i = 0; i < 70; i++) {
-    const d = document.createElement('div');
-    d.className = 'confeti';
-    d.style.left = Math.random() * 100 + 'vw'; d.style.background = cols[i % cols.length];
-    d.style.animationDuration = (2.2 + Math.random() * 2.2) + 's'; d.style.animationDelay = (Math.random() * 0.8) + 's';
-    document.body.appendChild(d); setTimeout(() => d.remove(), 6000);
-  }
-}
-
-/* ======================= arranque ======================= */
-renderSetup();
-</script>
+<script src="motor.js"></script>
+<script src="red.js"></script>
+<script src="ui.js"></script>
+<script src="ui-juego.js"></script>
 </body>
 </html>
