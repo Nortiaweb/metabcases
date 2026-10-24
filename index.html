@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico en la granja: juego de casos de metabolismo</title>
+<style>
+  :root { --verde:#1e7a46; --azul:#1f3a5f; --crema:#f6f4ec; --gris:#5b6470; --rojo:#a33a2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--crema); color:#222; line-height:1.45; }
+  header { background:var(--azul); color:#fff; padding:14px 20px; }
+  header h1 { margin:0; font-size:1.25rem; }
+  header p { margin:4px 0 0; opacity:.85; font-size:.9rem; }
+  main { max-width:1000px; margin:20px auto; padding:0 16px; }
+  .card { background:#fff; border-radius:10px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:16px; }
+  h2 { margin:0 0 10px; font-size:1.05rem; color:var(--azul); }
+  button { font:inherit; border:0; border-radius:8px; padding:9px 14px; cursor:pointer; background:var(--verde); color:#fff; }
+  button:hover:not(:disabled) { filter:brightness(1.08); }
+  button:disabled { background:#c9ccd1; color:#6b7078; cursor:not-allowed; }
+  button.sec { background:#e7eaef; color:var(--azul); }
+  button.peligro { background:var(--rojo); }
+  select, input[type=text] { font:inherit; padding:7px 9px; border:1px solid #c9ccd1; border-radius:6px; background:#fff; }
+  .fila { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+  .grid { display:grid; grid-template-columns: 1fr; gap:16px; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
+  .turno { font-size:1.1rem; }
+  .turno b { color:var(--verde); }
+  .chip { display:inline-block; padding:3px 9px; border-radius:99px; background:#e7eaef; font-size:.85rem; margin:2px 4px 2px 0; }
+  .chip.out { background:#f3d9d4; color:var(--rojo); text-decoration:line-through; }
+  .chip.on { background:#d7efe0; color:var(--verde); font-weight:600; }
+  .pruebas button { display:block; width:100%; text-align:left; margin-bottom:6px; background:#eef5f0; color:#14331f; }
+  .pruebas button:disabled { background:#eceef1; color:#8a9099; text-decoration:line-through; }
+  .log { list-style:none; padding:0; margin:0; max-height:360px; overflow:auto; }
+  .log li { border-left:4px solid var(--verde); background:#fafbf8; padding:8px 10px; margin-bottom:8px; border-radius:4px; }
+  .log li.error { border-color:var(--rojo); }
+  .log small { color:var(--gris); }
+  .cuaderno .grupo { margin-bottom:10px; }
+  .cuaderno .grupo span.titulo { display:block; font-weight:600; color:var(--gris); font-size:.85rem; margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em; }
+  .opcion { display:inline-block; margin:3px 4px 3px 0; padding:5px 10px; border-radius:6px; border:1px solid #c9ccd1; background:#fff; color:#222; cursor:pointer; font-size:.9rem; }
+  .opcion.tachada { text-decoration:line-through; color:#9aa0a8; background:#f2f2f2; }
+  .diagnostico label { display:block; font-size:.9rem; color:var(--gris); margin-top:8px; }
+  .diagnostico select { width:100%; margin-top:3px; }
+  .aviso { background:#fff7e0; border:1px solid #f0d78a; padding:10px; border-radius:8px; font-size:.9rem; }
+  .ganador { text-align:center; padding:24px; }
+  .ganador h2 { font-size:1.4rem; color:var(--verde); }
+  .sol { background:#eef5f0; padding:12px; border-radius:8px; margin-top:10px; }
+  footer { text-align:center; color:var(--gris); font-size:.8rem; padding:24px 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Diagnóstico en la granja</h1>
+  <p>Juego de casos clínicos de metabolismo. Gana quien diagnostique antes el problema correcto.</p>
+</header>
+
+<main>
+  <!-- PANTALLA 1: preparar partida -->
+  <section id="pantallaInicio" class="card">
+    <h2>Nueva partida</h2>
+    <p>Elige el caso y los veterinarios que van a investigar. Jugáis por turnos en este mismo dispositivo: pasa el ordenador al siguiente jugador en cada turno.</p>
+
+    <div class="fila">
+      <label for="casoSel">Caso:</label>
+      <select id="casoSel" onchange="renderExpedientes()"></select>
+    </div>
+    <div class="fila">
+      <label for="expSel">Paciente:</label>
+      <select id="expSel"></select>
+    </div>
+
+    <h2 style="margin-top:14px">Veterinarios</h2>
+    <div id="listaJugadores"></div>
+    <button id="btnAnadir" class="sec" onclick="anadirJugador()">+ Añadir veterinario</button>
+
+    <div style="margin-top:18px">
+      <button onclick="iniciarPartida()">Empezar la partida</button>
+    </div>
+  </section>
+
+  <!-- PANTALLA 2: partida -->
+  <section id="pantallaJuego" hidden>
+    <div class="card">
+      <h2 id="tituloCaso"></h2>
+      <p id="contexto" style="margin:0"></p>
+    </div>
+
+    <div class="card">
+      <div id="turno" class="turno"></div>
+      <div id="jugadores" style="margin-top:8px"></div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card pruebas">
+          <h2>1. Pedir una prueba o revisión</h2>
+          <p style="margin-top:0;font-size:.85rem;color:var(--gris)">Gastas tu turno para revelar una pista. Cada prueba solo se puede pedir una vez.</p>
+          <div id="listaPruebas"></div>
+          <button class="sec" onclick="pasarTurno()" style="margin-top:6px">Pasar turno sin pedir nada</button>
+        </div>
+
+        <div class="card diagnostico">
+          <h2>2. Proponer el diagnóstico</h2>
+          <p style="margin-top:0;font-size:.85rem;color:var(--gris)">Eliges causa, enzima bloqueada y lugar de exposición. Si aciertas, ganas. Si fallas, quedas fuera de la partida.</p>
+          <label for="dCausa">Causa (qué lo produjo)</label>
+          <select id="dCausa"></select>
+          <label for="dEnzima">Enzima bloqueada</label>
+          <select id="dEnzima"></select>
+          <label for="dLugar">Lugar de exposición</label>
+          <select id="dLugar"></select>
+          <div style="margin-top:12px"><button class="peligro" onclick="diagnosticar()">Proponer diagnóstico</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h2>Pistas reveladas</h2>
+          <ul id="listaPistas" class="log"></ul>
+        </div>
+        <div class="card cuaderno">
+          <h2>Cuaderno del caso</h2>
+          <p style="margin-top:0;font-size:.85rem;color:var(--gris)">Toca una opción para tacharla. Sirve para ir descartando hipótesis.</p>
+          <div id="cuaderno"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANTALLA 3: final -->
+  <section id="pantallaFin" class="card ganador" hidden>
+    <h2 id="finTitulo"></h2>
+    <p id="finTexto"></p>
+    <div class="sol" id="finSolucion"></div>
+    <div style="margin-top:16px"><button onclick="volverInicio()">Nueva partida</button></div>
+  </section>
+</main>
+
+<footer>Material de estudio. Los casos vienen del enunciado del Caso 1 de Bioquímica.</footer>
+
+<script src="casos.js"></script>
+<script>
+/* ---------- utilidades ---------- */
+const $ = id => document.getElementById(id);
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+/* ---------- pantalla de preparación ---------- */
+let nombresSetup = ["Dra. Ana", "Dr. Luis"];
+
+function cargarCasos() {
+  $('casoSel').innerHTML = CASOS.map(c => `<option value="${esc(c.id)}">${esc(c.titulo)}</option>`).join('');
+  renderExpedientes();
+  renderJugadoresSetup();
+}
+
+function renderExpedientes() {
+  const caso = CASOS.find(c => c.id === $('casoSel').value) || CASOS[0];
+  $('expSel').innerHTML = caso.expedientes
+    .map(e => `<option value="${esc(e.id)}">${esc(e.paciente)} (expediente ${esc(e.id)})</option>`).join('');
+}
+
+function renderJugadoresSetup() {
+  $('listaJugadores').innerHTML = nombresSetup.map((n, i) => `
+    <div class="fila">
+      <input type="text" value="${esc(n)}" maxlength="24" aria-label="Nombre del veterinario ${i + 1}"
+             oninput="nombresSetup[${i}] = this.value">
+      <button class="sec" onclick="quitarJugador(${i})" ${nombresSetup.length <= 2 ? 'disabled' : ''}>Quitar</button>
+    </div>`).join('');
+  $('btnAnadir').disabled = nombresSetup.length >= 4;
+}
+
+function anadirJugador() {
+  if (nombresSetup.length < 4) { nombresSetup.push("Veterinario " + (nombresSetup.length + 1)); renderJugadoresSetup(); }
+}
+
+function quitarJugador(i) {
+  if (nombresSetup.length > 2) { nombresSetup.splice(i, 1); renderJugadoresSetup(); }
+}
+
+/* ---------- estado de la partida ---------- */
+let S = null; // estado de la partida actual
+
+function mostrar(pantalla) {
+  $('pantallaInicio').hidden = pantalla !== 'inicio';
+  $('pantallaJuego').hidden = pantalla !== 'juego';
+  $('pantallaFin').hidden = pantalla !== 'fin';
+  window.scrollTo(0, 0);
+}
+
+function iniciarPartida() {
+  const nombres = nombresSetup.map(n => n.trim()).filter(Boolean);
+  if (nombres.length < 2) { alert('Necesitáis al menos 2 veterinarios con nombre.'); return; }
+  const caso = CASOS.find(c => c.id === $('casoSel').value) || CASOS[0];
+  const exp = caso.expedientes.find(e => e.id === $('expSel').value) || caso.expedientes[0];
+
+  S = {
+    caso, exp,
+    jugadores: nombres.map(n => ({ nombre: n, eliminado: false })),
+    turno: 0,
+    usadas: {},          // ids de pruebas ya pedidas
+    pistas: [],          // pistas reveladas, la más reciente primero
+    tachados: {},        // opciones tachadas en el cuaderno
+    terminada: false
+  };
+  S.pistas.push({ titulo: 'Caso inicial', texto: exp.intro, quien: null, tipo: 'info' });
+  mostrar('juego');
+  renderJuego();
+}
+
+function jugadorActual() { return S.jugadores[S.turno]; }
+
+/* Avanza al siguiente veterinario que siga en la partida */
+function siguienteTurno() {
+  if (S.jugadores.every(j => j.eliminado)) { terminar(null); return; }
+  do { S.turno = (S.turno + 1) % S.jugadores.length; } while (S.jugadores[S.turno].eliminado);
+  renderJuego();
+}
+
+function pedirPrueba(id) {
+  if (S.terminada || S.usadas[id]) return;
+  const prueba = S.exp.pruebas.find(p => p.id === id);
+  if (!prueba) return;
+  S.usadas[id] = true;
+  S.pistas.unshift({ titulo: prueba.nombre, texto: prueba.pista, quien: jugadorActual().nombre, tipo: 'prueba' });
+  siguienteTurno();
+}
+
+function pasarTurno() {
+  if (S.terminada) return;
+  siguienteTurno();
+}
+
+function diagnosticar() {
+  if (S.terminada) return;
+  const c = $('dCausa').value, e = $('dEnzima').value, l = $('dLugar').value;
+  const j = jugadorActual();
+  const sol = S.exp.solucion;
+
+  if (c === sol.causa && e === sol.enzima && l === sol.lugar) {
+    terminar(j);
+    return;
+  }
+  j.eliminado = true;
+  S.pistas.unshift({
+    titulo: 'Diagnóstico incorrecto',
+    texto: j.nombre + ' propuso una combinación que no es correcta y queda fuera de la partida.',
+    quien: j.nombre, tipo: 'error'
+  });
+  siguienteTurno();
+}
+
+function terminar(ganador) {
+  S.terminada = true;
+  const sol = S.exp.solucion;
+  const etiqueta = (lista, id) => (lista.find(x => x.id === id) || { texto: id }).texto;
+  const op = S.caso.opciones;
+  $('finSolucion').innerHTML =
+    `<p><b>Causa:</b> ${esc(etiqueta(op.causas, sol.causa))}<br>` +
+    `<b>Enzima bloqueada:</b> ${esc(etiqueta(op.enzimas, sol.enzima))}<br>` +
+    `<b>Lugar de exposición:</b> ${esc(etiqueta(op.lugares, sol.lugar))}</p>` +
+    `<p>${esc(S.exp.explicacion)}</p>`;
+  if (ganador) {
+    $('finTitulo').textContent = '¡Diagnóstico correcto!';
+    $('finTexto').textContent = ganador.nombre + ' gana la partida.';
+  } else {
+    $('finTitulo').textContent = 'Nadie ha acertado';
+    $('finTexto').textContent = 'Todos los veterinarios han quedado fuera. Esta es la solución:';
+  }
+  mostrar('fin');
+}
+
+function volverInicio() {
+  S = null;
+  mostrar('inicio');
+}
+
+/* ---------- pintar la partida ---------- */
+function renderJuego() {
+  if (!S) return;
+  const op = S.caso.opciones;
+
+  $('tituloCaso').textContent = S.caso.titulo + ' · ' + S.exp.paciente;
+  $('contexto').textContent = S.caso.granja + '. ' + S.exp.intro;
+
+  const actual = jugadorActual();
+  $('turno').innerHTML = S.terminada ? '' :
+    `Turno de <b>${esc(actual.nombre)}</b>. Pasa el dispositivo a este veterinario.`;
+
+  $('jugadores').innerHTML = S.jugadores.map((j, i) =>
+    `<span class="chip ${j.eliminado ? 'out' : (i === S.turno && !S.terminada ? 'on' : '')}">${esc(j.nombre)}${j.eliminado ? ' (fuera)' : ''}</span>`
+  ).join('');
+
+  // pruebas
+  const quedanPruebas = S.exp.pruebas.some(p => !S.usadas[p.id]);
+  $('listaPruebas').innerHTML = S.exp.pruebas.map(p =>
+    `<button onclick="pedirPrueba('${esc(p.id)}')" ${S.usadas[p.id] || S.terminada ? 'disabled' : ''}>${esc(p.nombre)}${S.usadas[p.id] ? ' (ya pedida)' : ''}</button>`
+  ).join('') + (quedanPruebas ? '' : '<p class="aviso">Ya se han pedido todas las pruebas. Solo queda proponer diagnóstico.</p>');
+
+  // selects de diagnóstico (se reconstruyen en cada turno)
+  const opcionesSel = lista => '<option value="">-- elegir --</option>' +
+    lista.map(x => `<option value="${esc(x.id)}">${esc(x.texto)}</option>`).join('');
+  $('dCausa').innerHTML = opcionesSel(op.causas);
+  $('dEnzima').innerHTML = opcionesSel(op.enzimas);
+  $('dLugar').innerHTML = opcionesSel(op.lugares);
+
+  // pistas
+  $('listaPistas').innerHTML = S.pistas.map(p =>
+    `<li class="${p.tipo === 'error' ? 'error' : ''}"><b>${esc(p.titulo)}</b>` +
+    (p.quien ? ` <small>· ${esc(p.quien)}</small>` : '') +
+    `<br>${esc(p.texto)}</li>`
+  ).join('');
+
+  // cuaderno
+  const grupo = (titulo, lista, cat) => `
+    <div class="grupo"><span class="titulo">${titulo}</span>
+    ${lista.map(x => {
+      const k = cat + ':' + x.id;
+      return `<span class="opcion ${S.tachados[k] ? 'tachada' : ''}" onclick="alternarTachado('${cat}','${esc(x.id)}')">${esc(x.texto)}</span>`;
+    }).join('')}</div>`;
+  $('cuaderno').innerHTML =
+    grupo('Causas', op.causas, 'causa') +
+    grupo('Enzimas', op.enzimas, 'enzima') +
+    grupo('Lugares', op.lugares, 'lugar');
+
+  // controles de diagnóstico y pasar turno deshabilitados al terminar
+  document.querySelectorAll('.diagnostico select, .diagnostico button, .pruebas > .sec').forEach(el => el.disabled = S.terminada);
+}
+
+function alternarTachado(cat, id) {
+  const k = cat + ':' + id;
+  S.tachados[k] = !S.tachados[k];
+  renderJuego();
+}
+
+/* ---------- arranque ---------- */
+cargarCasos();
+mostrar('inicio');
+</script>
+</body>
+</html>
