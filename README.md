@@ -1,40 +1,23 @@
-# metabcases
+# Diagnóstico en la granja
 
-Juego web tipo Cluedo para aprender metabolismo con casos clínicos de veterinaria.
-Los veterinarios investigan una granja, piden pruebas para revelar pistas y gana quien
-diagnostique antes el problema correcto.
+Juego de mesa digital tipo Cluedo para estudiar bioquímica con casos clínicos de veterinaria.
+Los veterinarios recorren un tablero con las salas de una granja, recogen tarjetas con pistas y
+ayudas, y el primero que acierte el diagnóstico gana.
 
-## Cómo jugar
+**Jugar:** <https://nortiaweb.github.io/metabcases/>
 
-1. Abre `index.html` en el navegador.
-2. Elige el caso y el paciente (expediente).
-3. Escribid los nombres de los veterinarios (2 a 4).
-4. En cada turno, el veterinario que toca:
-   - pide una prueba para revelar una pista, o
-   - propone un diagnóstico: causa, enzima bloqueada y lugar de exposición.
-5. Si el diagnóstico es correcto, gana. Si no, queda fuera de la partida.
+## Cómo se juega
 
-La partida es por turnos en un mismo dispositivo. Todavía no hay multijugador en red.
+1. Entre 2 y 6 veterinarios juegan en la misma partida, por turnos, en un solo dispositivo.
+2. En tu turno tira los dados y mueve a tu personaje por las casillas, o investiga la sala en la que estás.
+3. Al entrar en una sala descubres una tarjeta (pista, ayuda o descarte). Todos la ven.
+4. Tacha sospechas en el cuaderno.
+5. En la Clínica veterinaria puedes acusar: para cada animal, qué lo ha producido, qué enzima está bloqueada y dónde se expuso. Si aciertas las seis, ganas. Si fallas, quedas fuera.
 
-## Estructura
+## Ficheros
 
-- `index.html`: la web del juego (pantallas, reglas y lógica).
-- `casos.js`: los datos de los casos (opciones, pruebas, soluciones y explicaciones).
-
-## Añadir un caso nuevo
-
-En `casos.js`, copia un objeto de `CASOS` y cambia:
-
-- `opciones`: las listas de causas, enzimas y lugares que aparecen en los desplegables.
-- `expedientes`: cada paciente, con su `solucion` (los ids deben existir en `opciones`),
-  sus `pruebas` (cada una con una `pista`) y su `explicacion` final.
-
-## Publicar en GitHub Pages
-
-En el repositorio: Settings → Pages → Source: `Deploy from a branch`, rama `main`, carpeta `/ (root)`.
-La web quedará disponible en la URL que indique GitHub.
-
-## Próximos pasos
-
-- Más casos con problemas distintos (no solo metabólicos).
-- Multijugador en red en tiempo real (requiere un servicio de servidor, por ejemplo Firebase).
+- `index.html`: interfaz, tablero y reglas.
+- `casos.js`: datos del caso (plano, salas, tarjetas, solución). Añadir un caso no obliga a tocar el código.
+- `SPECS.md`: **documento de especificaciones** del juego, con preguntas abiertas para ir refinándolo.
+- `CREDITOS.md`: autoría y licencia de las imágenes.
+- `img/`: imágenes.
