@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico en la granja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<div id="avisoRed" class="aviso-red" hidden></div>
+
+<!-- ================= PORTADA ================= -->
+<section id="pPortada" class="portada">
+  <div class="caja">
+    <span class="sello">🩺 Juego de casos clínicos · multijugador</span>
+    <h1>Diagnóstico en la granja</h1>
+    <p>Dos animales enfermos, un tablero para cada uno y un único objetivo: ser el primero en descubrir qué les pasa. Cada jugador desde su dispositivo y con sus propias notas.</p>
+    <div class="botones">
+      <button class="btn grande" onclick="UI.ir('entrada','crear')">🚜 Crear partida</button>
+      <button class="btn grande azul" onclick="UI.ir('entrada','unir')">🔑 Unirme con un código</button>
+    </div>
+    <div class="fila-emojis" aria-hidden="true"><span>🐑</span><span>🐴</span><span>🐄</span><span>🐓</span></div>
+  </div>
+</section>
+
+<!-- ================= ENTRADA (nombre y avatar) ================= -->
+<main id="pEntrada" class="contenedor" hidden>
+  <div class="topbar">
+    <div class="logo">🌾 Diagnóstico en la granja</div>
+    <button class="btn claro mini" onclick="UI.ir('portada')">⬅ Portada</button>
+  </div>
+  <div class="panel form-entrada">
+    <h2 id="entTitulo">Crear partida</h2>
+    <label class="campo"><span>Tu nombre</span>
+      <input type="text" id="entNombre" maxlength="20" placeholder="Dra. Ana" autocomplete="nickname"></label>
+    <div class="campo"><span>Tu personaje (toca para cambiarlo)</span>
+      <div class="fila-avatar"><button class="avatar" id="entAvatar" onclick="UI.cambiarAvatar()" aria-label="Cambiar personaje"></button></div></div>
+    <label class="campo" id="entCodigoCampo"><span>Código de la partida</span>
+      <input type="text" id="entCodigo" class="codigo" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters"></label>
+    <p id="entError" class="msg" style="display:none;background:#fbe0da;border-color:#efb5a9"></p>
+    <button class="btn grande ancho" id="entBoton" onclick="UI.entrar()">Continuar</button>
+    <p class="ayuda" id="entAyuda" style="margin-top:12px"></p>
+  </div>
+</main>
+
+<!-- ================= SALA DE ESPERA ================= -->
+<main id="pLobby" class="contenedor" hidden>
+  <div class="topbar">
+    <div class="logo">🌾 Diagnóstico en la granja</div>
+    <button class="btn claro mini" onclick="UI.salir()">🚪 Salir</button>
+  </div>
+  <div class="panel form-entrada">
+    <h2>Sala de espera</h2>
+    <div class="codigo-sala">
+      <p class="ayuda" style="margin:0 0 6px">Pasa este código a los demás jugadores</p>
+      <span class="cod" id="lobCodigo"></span>
+      <div style="margin-top:12px"><button class="btn claro mini" onclick="UI.copiarEnlace()" id="btnCopiar">🔗 Copiar enlace para invitar</button></div>
+    </div>
+    <ul class="lista-lobby" id="lobJugadores"></ul>
+    <div id="lobAcciones"></div>
+  </div>
+  <div class="panel form-entrada">
+    <h2>🎲 Resumen de las reglas</h2>
+    <ul style="margin:0;padding-left:20px">
+      <li>Cada animal tiene su tablero, sus tarjetas y su cuaderno de notas.</li>
+      <li>En tu turno tiras los dados y mueves tu ficha en <b>uno</b> de los dos tableros.</li>
+      <li>Al entrar en una sala descubres una tarjeta que <b>solo ves tú</b>.</li>
+      <li>Tus notas son privadas: nadie más las ve.</li>
+      <li>Para acusar hay que estar en la Clínica del tablero de ese animal. Si fallas, pierdes 2 turnos.</li>
+      <li>Gana quien resuelva primero los dos casos.</li>
+    </ul>
+  </div>
+</main>
+
+<!-- ================= PARTIDA ================= -->
+<main id="pJuego" class="contenedor" hidden>
+  <div class="topbar">
+    <div class="logo">🌾 Diagnóstico en la granja <span class="chip-sala" id="juCodigo"></span></div>
+    <div>
+      <button class="btn claro mini" onclick="UI.verCaso()">📋 El caso</button>
+      <button class="btn claro mini" id="btnSonido" onclick="UI.alternarSonido()" aria-label="Activar o quitar el sonido">🔊</button>
+      <button class="btn claro mini" onclick="UI.salir()">🚪 Salir</button>
+    </div>
+  </div>
+
+  <div id="juJugadores" class="barra-jug"></div>
+
+  <div class="arriba">
+    <div class="panel" id="panelTurno"></div>
+    <div class="panel">
+      <h2>📣 Lo que está pasando</h2>
+      <ul id="registro" class="registro"></ul>
+    </div>
+  </div>
+
+  <div class="tableros" id="tableros"></div>
+
+  <h2 style="margin:22px 0 10px;color:var(--marron)">🔒 Solo tú ves esto <span class="tag-privado">privado</span></h2>
+  <div class="tableros" id="privados"></div>
+</main>
+
+<div id="capas"></div>
+
+<footer>
+  Material de estudio de Bioquímica · Imágenes CC0 de Wikimedia Commons ·
+  <a href="https://github.com/Nortiaweb/metabcases/blob/main/CREDITOS.md" target="_blank" rel="noopener">Créditos</a> ·
+  <a href="https://github.com/Nortiaweb/metabcases/blob/main/SPECS.md" target="_blank" rel="noopener">Especificaciones</a>
+</footer>
+
+<script src="vendor/peerjs.min.js"></script>
+<script src="casos.js"></script>
+<script src="motor.js"></script>
+<script src="red.js"></script>
+<script src="ui.js"></script>
+<script src="ui-juego.js"></script>
+</body>
+</html>
